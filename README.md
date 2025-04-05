@@ -30,3 +30,6 @@ You can find the settings in (Github)**/samples/config/config.json** to configur
 
 ## Domain Binding
 Modify binded domains in **/usermanager/{groupname}/group.json**. It determines whether an email can be relayed or will be bounced back.
+
+## SIT(Sending In Time)
+wMailServer doesn't employ a queue for email sending. When a user attempts to send emails, wMailServer determines whether the emails should be relayed or delivered to local users. If an error occurs during the process, wMailServer won't retry sending, but sends a error mail to the sender.
