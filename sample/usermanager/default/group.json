@@ -1,0 +1,25 @@
+{
+    "users": {
+        "admin": {
+            "password": "admin",
+            "permissions": [
+                "receive",
+                "send"
+            ],
+            "path": "./usermanager/default/users/admin"
+        },
+        "admin2": {
+            "password": "admin2",
+            "permissions": [
+                "receive",
+                "send"
+            ],
+            "path": "./usermanager/default/users/admin2"
+        }
+    },
+    "bindDomains": [
+        "localhost",
+        "127.0.0.1",
+        "localhost.com"
+    ]
+}
