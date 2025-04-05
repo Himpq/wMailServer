@@ -1,0 +1,60 @@
+{
+    "SMTPServices": {
+        "settings": {
+            "capabilities": [
+                "PIPELINING",
+                "SIZE 73400320",
+                "STARTTLS",
+                "AUTH LOGIN PLAIN",
+                "AUTH=LOGIN",
+                "SMTPUTF8",
+                "8BITMIME"
+            ]
+        },
+        "services": {
+            "25": {
+                "bindIP": "0.0.0.0",
+                "ssl": false,
+                "userGroup": "default"
+            },
+            "465": {
+                "bindIP": "0.0.0.0",
+                "ssl": true,
+                "userGroup": "default"
+            }
+        },
+        "MailRelay": {
+            "enable": true,
+            "relayHost": "",
+            "relayPort": 80,
+            "relayUsername": "",
+            "relayPassword": "",
+            "ssl": false,
+            "useRelayUsernameAsSender": true
+        }
+    },
+    "POP3Services": {
+        "services": {
+            "110": {
+                "bindIP": "0.0.0.0",
+                "ssl": false,
+                "userGroup": "default"
+            },
+            "995": {
+                "bindIP": "0.0.0.0",
+                "ssl": true,
+                "userGroup": "default"
+            }
+        }
+    },
+    "UserGroups": {
+        "default": {
+            "errorPath": "./config/error.txt",
+            "sslCert": {
+                "cert": "./config/ssl/cert.pem",
+                "key": "./config/ssl/key.pem",
+                "ca": "./config/ssl/ca.pem"
+            }
+        }
+    }
+}
