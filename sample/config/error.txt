@@ -7,7 +7,7 @@ MIME-Version: 1.0
 Content-Type: text/html; charset="UTF-8"
 
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
-    <h2 style="color: #d32f2f; margin-bottom: 20px;">$REASON</h2>
+    <h2 style="color: #d32f2f; margin-bottom: 20px;">Mail Delivery Failed</h2>
     
     <div style="background: #fff; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
         <p style="color: #333; line-height: 1.5;">We were unable to deliver your message to:</p>
@@ -17,7 +17,7 @@ Content-Type: text/html; charset="UTF-8"
     </div>
 
     <div style="color: #666; line-height: 1.6;">
-        <p>$DETAIL</p>
+        <p>The recipient's email address was not found on this server.</p>
         <p>Please check the recipient's email address and try again.</p>
     </div>
 

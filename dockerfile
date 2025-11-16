@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # 设置数据卷挂载点
-VOLUME ["/app/config", "/app/logs", "/app/usermanager"]
+VOLUME ["/app/config", "/app/logs", "/app/usermanager", "/app/temp"]
 
 # 暴露端口
 # SMTP 端口

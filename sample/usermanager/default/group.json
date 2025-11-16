@@ -4,7 +4,9 @@
             "password": "admin",
             "permissions": [
                 "receive",
-                "send"
+                "sendlocal",
+                "sendrelay",
+                "sendoutside"
             ],
             "path": "./usermanager/default/users/admin"
         },
@@ -12,7 +14,9 @@
             "password": "admin2",
             "permissions": [
                 "receive",
-                "send"
+                "sendlocal",
+                "sendrelay",
+                "sendoutside"
             ],
             "path": "./usermanager/default/users/admin2"
         }

@@ -63,7 +63,14 @@ class UserGroup:
         return False
 
     def isIn(self, email):
-        username = self.turnToUserName(email)
+        # 判断 email 是否属于本用户组：
+        # 1) 必须包含域（@）并且域在本组的 bindDomains 中
+        # 2) 本地用户名存在于 users 中
+        if '@' not in email:
+            return False
+        username, domain = email.split('@', 1)
+        if domain not in self.domains:
+            return False
         return username in self.users
     
     def getDomain(self, email):
@@ -71,7 +78,8 @@ class UserGroup:
 
     def addUser(self, username, password, permissions=None):
         if permissions is None:
-            permissions = ["receive", "send"]
+            # 把原来的 send 拆分为 sendlocal 和 sendrelay，默认新用户允许接收并可向本地发送/使用中继
+            permissions = ["receive", "sendlocal", "sendrelay"]
         
         user_path = f"{self.grouppath}/users/{username}"
         if not os.path.exists(user_path):

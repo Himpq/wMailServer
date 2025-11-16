@@ -9,6 +9,13 @@
                 "AUTH=LOGIN",
                 "SMTPUTF8",
                 "8BITMIME"
+            ],
+            "timeout": 5,
+            "ioTimeout": 60,
+            "maxMessageSize": 50,
+            "maxRecipients": 5,
+            "directPorts": [
+                25
             ]
         },
         "services": {
@@ -24,13 +31,18 @@
             }
         },
         "MailRelay": {
-            "enable": true,
+            "enable": false,
             "relayHost": "",
-            "relayPort": 80,
+            "relayPort": 25,
             "relayUsername": "",
             "relayPassword": "",
             "ssl": false,
             "useRelayUsernameAsSender": true
+        },
+        "SMTPWhiteList": {
+            "mode": "disable",
+            "whitelist": [],
+            "blacklist": []
         }
     },
     "POP3Services": {
@@ -45,6 +57,9 @@
                 "ssl": true,
                 "userGroup": "default"
             }
+        },
+        "settings": {
+            "maxSpeed": 1
         }
     },
     "UserGroups": {
@@ -56,5 +71,12 @@
                 "ca": "./config/ssl/ca.pem"
             }
         }
+    },
+    "wMailServerSettings": {
+        "tempPath": "./temp",
+        "ipMaxPwdTry": 5,
+        "ipBlockSeconds": 3600,
+        "maxCmdError": 5,
+        "cmdBlockSeconds": 60
     }
 }

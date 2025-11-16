@@ -1,0 +1,9 @@
+{
+  "example.domain": {
+    "smtp": "smtp.example.domain",
+    "ports": [
+      25,
+      465
+    ]
+  }
+}

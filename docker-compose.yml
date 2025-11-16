@@ -1,10 +1,10 @@
-version: '3'
+version: '4'
 
 services:
   wmailserver:
     build: .
     container_name: wmailserver
-    image: wmailserver-wmailserver:v3
+    image: wmailserver-wmailserver:v4
     ports:
       - "25:25"      # SMTP
       - "465:465"    # SMTP SSL
@@ -14,4 +14,5 @@ services:
       - ./www/wmailserver/config:/app/config
       - ./www/wmailserver/logs:/app/logs
       - ./www/wmailserver/usermanager:/app/usermanager
+      - ./www/wmailserver/temp:/app/temp
     restart: unless-stopped
