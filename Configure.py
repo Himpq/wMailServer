@@ -168,7 +168,13 @@ def init():
         },
         'POP3Services': {
             'settings': {
-                'maxSpeed': 1
+                'maxSpeed': 1,
+                # idle socket timeout in seconds per POP3 session
+                'idleTimeout': 300,
+                # TLS handshake timeout for implicit SSL/STLS
+                'handshakeTimeout': 10,
+                # maximum concurrently active POP3 worker threads
+                'maxConnections': 512
             }
         }
     }
