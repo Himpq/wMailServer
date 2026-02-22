@@ -14,6 +14,13 @@ import SocketUtils
 loginfo = None
 conf = None
 
+
+def _pop3_settings():
+    try:
+        return Configure.get('POP3Services', {}).get('settings', {}) or {}
+    except Exception:
+        return {}
+
 POP3Ctxs = {
     "greeting": "POP3 Server Ready",
     "capabilities": [
@@ -78,9 +85,27 @@ def handle_stls(conn, connfile, temp_data, user_group):
         if certfile and keyfile:
             context.load_cert_chain(certfile=certfile, keyfile=keyfile)
 
+        # Close text wrapper before TLS upgrade to avoid fd/wrapper leaks.
+        try:
+            if connfile:
+                connfile.close()
+        except Exception:
+            pass
+
         # wrap socket and perform handshake
         conn2 = context.wrap_socket(conn, server_side=True, do_handshake_on_connect=False)
+        hs_timeout = _pop3_settings().get('handshakeTimeout', 10)
+        try:
+            conn2.settimeout(float(hs_timeout))
+        except Exception:
+            pass
         conn2.do_handshake()
+        # restore idle timeout after handshake
+        idle_timeout = _pop3_settings().get('idleTimeout', 300)
+        try:
+            conn2.settimeout(float(idle_timeout))
+        except Exception:
+            pass
 
         new_connfile = SocketUtils.make_connfile(conn2, mode='r', encoding='utf-8')
         temp_data['ssl_active'] = True
@@ -468,7 +493,19 @@ def handle(conn: socket.socket, addr, user_group):
     state = "AUTHORIZATION"
     temp_data = {}
     
+    idle_timeout = _pop3_settings().get('idleTimeout', 300)
+    try:
+        conn.settimeout(float(idle_timeout))
+    except Exception:
+        pass
+
     connfile = SocketUtils.make_connfile(conn, mode='r', encoding='utf-8')
+    if connfile is None:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return
     try:
         ssl_active = isinstance(conn, ssl_lib.SSLSocket)
     except Exception:
@@ -569,14 +606,28 @@ def handle(conn: socket.socket, addr, user_group):
             except Exception:
                 pass
             break
+        except socket.timeout:
+            try:
+                loginfo.write(f"[{conn.getpeername()}][POP3] Idle timeout, closing connection")
+                conn.send("-ERR idle timeout\r\n".encode())
+            except Exception:
+                pass
+            break
 
     loginfo.write(f"[{conn.getpeername()}][POP3] Connection closed")
-    connfile.close()
-    conn.close()
+    try:
+        connfile.close()
+    except Exception:
+        pass
+    try:
+        conn.close()
+    except Exception:
+        pass
 
 class POP3Service:
     def __init__(self, bindIP, port, userGroup, ssl=False):
         self.socket = socket.socket()
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.port = port
         self.userGroupName = userGroup
         self.userGroup = UserManager.getGroup(userGroup)
@@ -584,6 +635,9 @@ class POP3Service:
         self.socket.bind((bindIP, port))
         self.socket.listen(128)
         self.threadpools = []
+        settings = _pop3_settings()
+        self.max_connections = int(settings.get('maxConnections', 512))
+        self.handshake_timeout = float(settings.get('handshakeTimeout', 10))
 
     def startListen(self):
         self.listen()
@@ -592,6 +646,19 @@ class POP3Service:
         while True:
             try:
                 conn, addr = self.socket.accept()
+                # prune finished worker threads to avoid unbounded memory growth
+                self.threadpools = [t for t in self.threadpools if t.is_alive()]
+                if len(self.threadpools) >= self.max_connections:
+                    try:
+                        loginfo.write(f"[POP3] Too many active connections ({len(self.threadpools)}), refusing {addr}")
+                        conn.send("-ERR Server busy, try later\r\n".encode())
+                    except Exception:
+                        pass
+                    try:
+                        conn.close()
+                    except Exception:
+                        pass
+                    continue
 
                 # check IP block before creating handler thread
                 peer_ip = None
@@ -633,7 +700,16 @@ class POP3Service:
                         except Exception:
                             pass
                         context.load_cert_chain(certfile=sslConfig.get('cert'), keyfile=sslConfig.get('key'))
+                        try:
+                            conn.settimeout(self.handshake_timeout)
+                        except Exception:
+                            pass
                         conn = context.wrap_socket(conn, server_side=True, do_handshake_on_connect=True)
+                        # restore POP3 idle timeout after handshake
+                        try:
+                            conn.settimeout(float(_pop3_settings().get('idleTimeout', 300)))
+                        except Exception:
+                            pass
                     except Exception as e:
                         try:
                             loginfo.write(f"[POP3] SSL wrap error on accept {self.port}: {e}")
@@ -645,8 +721,8 @@ class POP3Service:
                             pass
                         continue
 
-                self.threadpools.append(
-                    threading.Thread(target=handle, args=(conn, addr, self.userGroup)))
-                self.threadpools[-1].start()
+                th = threading.Thread(target=handle, args=(conn, addr, self.userGroup), daemon=True)
+                self.threadpools.append(th)
+                th.start()
             except Exception as e:
                 loginfo.write(f"[POP3] Error: {self.port}: {str(e)}")
